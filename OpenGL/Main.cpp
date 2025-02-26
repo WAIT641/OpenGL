@@ -13,6 +13,10 @@
 #define W_HEIGHT 600
 #define W_WIDTH 800
 
+const int height = 600;
+const int width = 800;
+
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -46,6 +50,16 @@ double t;
 
 glm::mat4 trans;
 unsigned int transformLoc;
+
+//model
+glm::mat4 model = glm::mat4(1.0);
+
+//projection
+glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 1000.0f);
+
+//view/cam
+glm::mat4 view = glm::mat4(1.0);
+
 
 GLFWwindow* inicializeWindow()
 {
@@ -96,7 +110,17 @@ void render()
     shaderProgram->use();
     shaderProgram->setInt("texture1", 0);
     shaderProgram->setInt("texture2", 1);
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+    
+    model = glm::rotate(model, glm::radians(0.2f), glm::vec3(0.5f, 1.0f, 0.0f));
+
+    int modelLoc = glGetUniformLocation(shaderProgram->ID, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    int viewlLoc = glGetUniformLocation(shaderProgram->ID, "view");
+    glUniformMatrix4fv(viewlLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+    int projectionLoc = glGetUniformLocation(shaderProgram->ID, "projection");
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -180,13 +204,11 @@ int main()
     }
     stbi_image_free(data);
 
-    trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(0.5f, 0, 0));
-    trans = glm::rotate(trans, glm::radians(60.0f), glm::vec3(0.0, 0.0, 1.0));
-    trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-
-    transformLoc = glGetUniformLocation(shaderProgram->ID, "transform");
-    
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f));
 
     while (!glfwWindowShouldClose(window))//main loop------------------------------------------------------------------
     {
